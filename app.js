@@ -2,7 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 const mainFolderPath = path.join(__dirname, 'mainFolder')
-fs.mkdir(mainFolderPath, (err) => err);
+fs.mkdir(mainFolderPath, {recursive: true},(err) => {
+    if (err) throw new Error(err);
+});
 
 for (let i = 1; i < 6; i++) {
     const miniFolderPath = path.join(mainFolderPath, `miniFolder${i}`);
@@ -17,7 +19,6 @@ const readFile1 = path.join(mainFolderPath, 'miniFile1.txt');
 
 fs.stat(readFile1, (err, stats) => {
     if (err) throw new Error(err);
-    console.log(stats.isFile())
 })
 
 fs.readdir(mainFolderPath, (err,files) => {
