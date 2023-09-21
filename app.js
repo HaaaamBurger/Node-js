@@ -30,6 +30,21 @@ app.get('/users', async (req, res) => {
     })
 })
 
+// app.get('/users/:id', async (req, res) => {
+//     const {id} = req.body;
+//
+//     fs.readFile(dbPath, (err, data) => {
+//         if (err) throw new Error(err);
+//         const users = JSON.parse(data.length)
+//         if (users.length) {
+//
+//         }
+//
+//
+//
+//     })
+// })
+
 app.post('/users', async (req, res) => {
     const user = req.body;
     if (user.name.length > 3 && user.age > 0) {
