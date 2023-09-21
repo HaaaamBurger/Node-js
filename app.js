@@ -30,20 +30,19 @@ app.get('/users', async (req, res) => {
     })
 })
 
-// app.get('/users/:id', async (req, res) => {
-//     const {id} = req.body;
-//
-//     fs.readFile(dbPath, (err, data) => {
-//         if (err) throw new Error(err);
-//         const users = JSON.parse(data.length)
-//         if (users.length) {
-//
-//         }
-//
-//
-//
-//     })
-// })
+app.get('/users/:id', async (req, res) => {
+    const {id} = req.params;
+
+    fs.readFile(dbPath, (err, data) => {
+        if (err) throw new Error(err);
+        const users = JSON.parse(data) || [];
+        if (users.length >= +id - 1) {
+            res.json({
+                body: users[+id - 1]
+            })
+        }
+    })
+})
 
 app.post('/users', async (req, res) => {
     const user = req.body;
