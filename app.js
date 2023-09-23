@@ -1,122 +1,120 @@
-const path = require('path');
-const fs = require('fs');
-
 const express = require('express');
-const app = express();
+const fsService = require('./fs.services');
 
+const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-const dbPath = path.join(__dirname, 'db.json');
+const validChecker = (user) => {
+    if (user.name.length > 3 && user.age >= 0) {
+        return true
+    }
+}
 
 app.get('/users', async (req, res) => {
-    fs.readFile(dbPath, (err, data) => {
-        if (err) throw new Error(err);
+    const users = await fsService.reader();
 
-        if (JSON.parse(data).length) {
-            res.json(
-                {
-                    data: JSON.parse(data)
-                }
-            )
-        } else {
-            console.log('No users!');
-            res.json(
-                {
-                    data: 'No Users!'
-                }
-            )
-        }
+    res.status(201).json({
+        data: users
     })
 })
 
 app.get('/users/:id', async (req, res) => {
-    const {id} = req.params;
+    const users = await fsService.reader();
+    const userId = (() => {
+        const {id} = req.params;
+        return +id - 1
+    })()
 
-    fs.readFile(dbPath, (err, data) => {
-        if (err) throw new Error(err);
-        const users = JSON.parse(data) || [];
-        if (users.length >= +id - 1) {
-            res.json({
-                body: users[+id - 1]
-            })
+    try {
+        if (!users[userId]) {
+            throw new Error('No such a user!')
         }
-    })
+        res.status(201).json(users[userId])
+    } catch (e) {
+        res.status(404).json(e.message)
+    }
 })
 
 app.post('/users', async (req, res) => {
     const user = req.body;
-    if (user.name.length > 3 && user.age > 0) {
+    const users = await fsService.reader();
 
-        fs.readFile(dbPath, (err, data) => {
-            if (err) throw new Error(err);
-            const users = JSON.parse(data) || [];
+    try {
+        if (validChecker(user)) {
             users.push(user);
-
-            fs.writeFile(dbPath, JSON.stringify(users), (err) => {
-                if (err) throw new Error(err);
+            await fsService.writer(users);
+            res.status(201).json({
+                body: user,
+                message: 'User created!'
             })
-        })
-        res.status(201).json({
-            message: `User created!`,
-            body: user
-        })
-    } else {
-        res.status(401).json({
-            message: 'Invalid!'
+        } else {
+            throw new Error('Wrong validation!')
+        }
+    } catch (e) {
+        res.status(404).json({
+            message: e.message
         })
     }
 })
 
-app.delete('/users/:id', (req, res) => {
-    const {id} = req.params;
+app.put('/users/:id', async (req, res) => {
+    const users = await fsService.reader();
+    const user = req.body;
+    const userId = (() => {
+        const {id} = req.params;
+        return +id - 1;
+    })()
 
-    fs.readFile(dbPath, async (err, data) => {
-        if (err) throw new Error(err);
-
-        let users = JSON.parse(data) || [];
-        if (users.length && users[+id - 1]) {
-            users.splice(+id - 1, 1);
-
-            fs.writeFile(dbPath, JSON.stringify(users), (err) => {
-                if (err) throw new Error(err);
-                res.status(201).json({
-                    message: 'User deleted!'
-                })
-            })
-        } else {
-            res.status(401).json({
-                message: 'Bad request!'
-            })
+    try {
+        if (!users[userId]) {
+            throw new Error('No such a user!')
         }
 
-    })
+        if (!validChecker(user)) {
+            throw new Error('Wrong validation!');
+        }
+
+        users[userId] = user;
+        await fsService.writer(users);
+        res.status(201).json({
+            body: user,
+            message: 'User updated!'
+        })
+
+
+    } catch (e) {
+        res.status(404).json({
+            message: e.message
+        })
+    }
 })
 
-app.put('/users/:id', (req, res) => {
-    const {id} = req.params;
-    fs.readFile(dbPath, async (err, data) => {
-        if (err) throw new Error(err);
+app.delete('/users/:id', async (req, res) => {
+    const users = await fsService.reader();
+    const userId = (() => {
+        const {id} = req.params;
+        return +id - 1;
+    })()
 
-        const users = JSON.parse(data);
-        if (users[+id - 1]) {
-            users[+id - 1] = req.body
-
-            fs.writeFile(dbPath, JSON.stringify(users), (err) => {
-                if (err) throw new Error(err);
-                res.status(201).json({
-                    message: 'User updated!'
-                })
-            })
-        } else {
-            res.status(401).json({
-                message: 'Bad request!'
-            })
+    try {
+        if (!users[userId]) {
+            throw new Error('No such a user!');
         }
-    })
+        users.splice(userId, 1);
+        await fsService.writer(users);
+        res.status(201).json({
+            message: 'User deleted!'
+        })
+    } catch (e) {
+        res.status(404).json({
+            message: e.message
+        })
+    }
+
 })
 
 const PORT = 4444;
 app.listen(PORT, () => {
-    console.log(`Server has successfully started on port ${PORT}!`)
+    console.log(`Server has started on ${PORT} port!`);
 })
