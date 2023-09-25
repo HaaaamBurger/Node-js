@@ -1,3 +1,5 @@
+import {Request, Response} from "express";
+
 const express = require('express');
 const fsService = require('../fs.services');
 
@@ -11,7 +13,7 @@ const validChecker = (user) => {
     }
 }
 
-app.get('/users', async (req, res) => {
+app.get('/users', async (res: Response) => {
     const users = await fsService.reader();
 
     res.status(201).json({
@@ -19,7 +21,7 @@ app.get('/users', async (req, res) => {
     })
 })
 
-app.get('/users/:id', async (req, res) => {
+app.get('/users/:id', async (req: Request, res: Response) => {
     const users = await fsService.reader();
     const userId = (() => {
         const {id} = req.params;
@@ -36,7 +38,7 @@ app.get('/users/:id', async (req, res) => {
     }
 })
 
-app.post('/users', async (req, res) => {
+app.post('/users', async (req: Request, res: Response) => {
     const user = req.body;
     const users = await fsService.reader();
 
@@ -58,7 +60,7 @@ app.post('/users', async (req, res) => {
     }
 })
 
-app.put('/users/:id', async (req, res) => {
+app.put('/users/:id', async (req: Request, res: Response) => {
     const users = await fsService.reader();
     const user = req.body;
     const userId = (() => {
@@ -90,7 +92,7 @@ app.put('/users/:id', async (req, res) => {
     }
 })
 
-app.delete('/users/:id', async (req, res) => {
+app.delete('/users/:id', async (req: Request, res: Response) => {
     const users = await fsService.reader();
     const userId = (() => {
         const {id} = req.params;
