@@ -1,5 +1,5 @@
 const express = require('express');
-const fsService = require('./fs.services');
+const fsService = require('../fs.services');
 
 const app = express();
 app.use(express.json());
