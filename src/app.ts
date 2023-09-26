@@ -47,23 +47,26 @@ app.post(
   },
 );
 
-app.put("/users/:id", async (req: Request, res: Response) => {
-  const findUser = await User.findById(req.params.id);
-  try {
-    if (!findUser) {
-      throw new Error("No such a user!");
+app.put(
+  "/users/:id",
+  async (req: Request, res: Response): Promise<Response<IUser>> => {
+    const findUser = await User.findById(req.params.id);
+    try {
+      if (!findUser) {
+        throw new Error("No such a user!");
+      }
+      await User.updateOne({ ...req.body });
+      return res.status(201).json({
+        body: { ...req.body },
+        message: "User updated!",
+      });
+    } catch (e) {
+      return res.status(404).json({
+        message: "Error",
+      });
     }
-    await User.updateOne({ ...req.body });
-    return res.status(201).json({
-      body: { ...req.body },
-      message: "User updated!",
-    });
-  } catch (e) {
-    return res.status(404).json({
-      message: "Error",
-    });
-  }
-});
+  },
+);
 
 app.delete(
   "/users/:id",
