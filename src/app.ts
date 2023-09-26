@@ -24,25 +24,11 @@ app.get(
 app.get(
   "/users/:id",
   async (req: Request, res: Response): Promise<Response<IUser>> => {
-    const findUser = await User.findById(req.params);
-    console.log(findUser);
-
-    return res.status(200).json(findUser);
-    // const users = await User.find();
-    // const userId = (() => {
-    //   const { id } = req.params;
-    //   return +id - 1;
-    // })();
-
-
-    // try {
-    //   if (!users[userId]) {
-    //     throw new Error("No such a user!");
-    //   }
-    //   return res.status(201).json(users[userId]);
-    // } catch (e) {
-    //   return res.status(404).json("No such a user!");
-    // }
+    const findUser = await User.findById(req.params.id);
+    if (findUser) {
+      return res.status(200).json(findUser);
+    }
+    return res.status(400).json("No such a user!");
   },
 );
 
@@ -62,15 +48,9 @@ app.post(
 );
 
 app.put("/users/:id", async (req: Request, res: Response) => {
-  const userId = (() => {
-    const { id } = req.params;
-    return +id - 1;
-  })();
-
-  const users = await User.find();
-
+  const findUser = await User.findById(req.params.id);
   try {
-    if (!users[userId]) {
+    if (!findUser) {
       throw new Error("No such a user!");
     }
     await User.updateOne({ ...req.body });
@@ -91,18 +71,13 @@ app.delete(
     req: Request,
     res: Response,
   ): Promise<Response<{ message: string }>> => {
-    const users = await User.find();
-    const userId = (() => {
-      const { id } = req.params;
-      return +id - 1;
-    })();
+    const findUser = await User.findById(req.params.id);
 
     try {
-      if (!users[userId]) {
+      if (!findUser) {
         throw new Error("No such a user!");
       }
-      const deleteUser = users[userId];
-      await User.deleteOne({ email: deleteUser.email });
+      await User.deleteOne({ email: findUser.email });
       return res.status(201).json({
         message: "User deleted!",
       });
@@ -114,7 +89,7 @@ app.delete(
   },
 );
 
-const PORT = 4448;
+const PORT = 4444;
 app.listen(PORT, async () => {
   await mongoose.connect(
     "mongodb+srv://leaguecy:kunleM2004@nodedatabase.i5pp26l.mongodb.net/test",
