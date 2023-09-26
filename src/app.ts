@@ -24,20 +24,25 @@ app.get(
 app.get(
   "/users/:id",
   async (req: Request, res: Response): Promise<Response<IUser>> => {
-    const users = await User.find();
-    const userId = (() => {
-      const { id } = req.params;
-      return +id - 1;
-    })();
+    const findUser = await User.findById(req.params);
+    console.log(findUser);
 
-    try {
-      if (!users[userId]) {
-        throw new Error("No such a user!");
-      }
-      return res.status(201).json(users[userId]);
-    } catch (e) {
-      return res.status(404).json("No such a user!");
-    }
+    return res.status(200).json(findUser);
+    // const users = await User.find();
+    // const userId = (() => {
+    //   const { id } = req.params;
+    //   return +id - 1;
+    // })();
+
+
+    // try {
+    //   if (!users[userId]) {
+    //     throw new Error("No such a user!");
+    //   }
+    //   return res.status(201).json(users[userId]);
+    // } catch (e) {
+    //   return res.status(404).json("No such a user!");
+    // }
   },
 );
 
@@ -57,28 +62,27 @@ app.post(
 );
 
 app.put("/users/:id", async (req: Request, res: Response) => {
-  // const userId = (() => {
-  //   const { id } = req.params;
-  //   return +id - 1;
-  // })();
-  const userId = req.params;
-  const findUser = await User.findById(userId);
-  console.log(findUser);
+  const userId = (() => {
+    const { id } = req.params;
+    return +id - 1;
+  })();
 
-  // try {
-  //   if (!users[userId]) {
-  //     throw new Error("No such a user!");
-  //   }
-  //   await User.updateOne({ ...req.body });
-  //   return res.status(201).json({
-  //     body: { ...req.body },
-  //     message: "User updated!",
-  //   });
-  // } catch (e) {
-  //   return res.status(404).json({
-  //     message: "Error",
-  //   });
-  // }
+  const users = await User.find();
+
+  try {
+    if (!users[userId]) {
+      throw new Error("No such a user!");
+    }
+    await User.updateOne({ ...req.body });
+    return res.status(201).json({
+      body: { ...req.body },
+      message: "User updated!",
+    });
+  } catch (e) {
+    return res.status(404).json({
+      message: "Error",
+    });
+  }
 });
 
 app.delete(
@@ -110,7 +114,7 @@ app.delete(
   },
 );
 
-const PORT = 4446;
+const PORT = 4448;
 app.listen(PORT, async () => {
   await mongoose.connect(
     "mongodb+srv://leaguecy:kunleM2004@nodedatabase.i5pp26l.mongodb.net/test",
