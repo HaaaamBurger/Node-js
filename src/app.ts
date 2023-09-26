@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import * as mongoose from "mongoose";
 
+import { configs } from "./configs/config";
 import { User } from "./models/User.model";
 
 const app = express();
@@ -94,8 +95,6 @@ app.delete(
 
 const PORT = 4444;
 app.listen(PORT, async () => {
-  await mongoose.connect(
-    "mongodb+srv://leaguecy:kunleM2004@nodedatabase.i5pp26l.mongodb.net/test",
-  );
+  await mongoose.connect(configs.DB_URI);
   console.log(`Server has started on ${PORT} port!`);
 });
