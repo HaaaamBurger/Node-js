@@ -1,9 +1,7 @@
 import express, { Request, Response } from "express";
 import * as mongoose from "mongoose";
 
-import { configs } from "./configs/config";
-
-const fsService = require("..//fs.services");
+import { User } from "./models/User.model";
 
 const app = express();
 app.use(express.json());
@@ -15,22 +13,16 @@ interface IUser {
   gender: string;
 }
 
-const validChecker = (user: IUser) => {
-  if (user.name.length > 3 && user.age >= 0) {
-    return true;
-  }
-};
+app.get(
+  "/users",
+  async (req: Request, res: Response): Promise<Response<IUser[]>> => {
+    const users = await User.find();
+    return res.json(users);
+  },
+);
 
-app.get("/", async (res: Response) => {
-  const users = await fsService.reader();
-
-  res.status(201).json({
-    data: users,
-  });
-});
-
-app.get("/:id", async (req: Request, res: Response) => {
-  const users = await fsService.reader();
+app.get("/users/:id", async (req: Request, res: Response) => {
+  const users = await User.find();
   const userId = (() => {
     const { id } = req.params;
     return +id - 1;
@@ -46,31 +38,20 @@ app.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/", async (req: Request, res: Response) => {
-  const user = req.body;
-  const users = await fsService.reader();
-
+app.post("/users", async (req: Request, res: Response) => {
   try {
-    if (validChecker(user)) {
-      users.push(user);
-      await fsService.writer(users);
-      res.status(201).json({
-        body: user,
-        message: "User created!",
-      });
-    } else {
-      throw new Error("Wrong validation!");
-    }
-  } catch (e) {
-    res.status(404).json({
-      message: "Wrong validation!",
+    const createdUser = await User.create({ ...req.body });
+    res.status(201).json({
+      body: createdUser,
+      message: "User created!",
     });
+  } catch (e) {
+    res.status(404).json(e.message);
   }
 });
 
-app.put("/:id", async (req: Request, res: Response) => {
-  const users = await fsService.reader();
-  const user = req.body;
+app.put("/users/:id", async (req: Request, res: Response) => {
+  const users = await User.find();
   const userId = (() => {
     const { id } = req.params;
     return +id - 1;
@@ -80,15 +61,9 @@ app.put("/:id", async (req: Request, res: Response) => {
     if (!users[userId]) {
       throw new Error("No such a user!");
     }
-
-    if (!validChecker(user)) {
-      throw new Error("Wrong validation!");
-    }
-
-    users[userId] = user;
-    await fsService.writer(users);
+    await User.updateOne({ ...req.body });
     res.status(201).json({
-      body: user,
+      body: { ...req.body },
       message: "User updated!",
     });
   } catch (e) {
@@ -98,8 +73,8 @@ app.put("/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.delete("/:id", async (req: Request, res: Response) => {
-  const users = await fsService.reader();
+app.delete("/users/:id", async (req: Request, res: Response) => {
+  const users = await User.find();
   const userId = (() => {
     const { id } = req.params;
     return +id - 1;
@@ -109,8 +84,8 @@ app.delete("/:id", async (req: Request, res: Response) => {
     if (!users[userId]) {
       throw new Error("No such a user!");
     }
-    users.splice(userId, 1);
-    await fsService.writer(users);
+    const deleteUser = users[userId];
+    await User.deleteOne({ email: deleteUser.email });
     res.status(201).json({
       message: "User deleted!",
     });
@@ -123,6 +98,8 @@ app.delete("/:id", async (req: Request, res: Response) => {
 
 const PORT = 4444;
 app.listen(PORT, async () => {
-  await mongoose.connect(configs.DB_URI);
+  await mongoose.connect(
+    "mongodb+srv://leaguecy:kunleM2004@nodedatabase.i5pp26l.mongodb.net/test",
+  );
   console.log(`Server has started on ${PORT} port!`);
 });
