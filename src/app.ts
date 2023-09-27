@@ -20,10 +20,43 @@ app.get(
   },
 );
 
-app.get("/users/:id", async (req, res) => {
-  const { id: userId } = req.params;
+app.get("/users/:id", async (req: Request, res: Response) => {
+  const userId = req.params.id;
   const user = await User.findById(userId);
-  res.status(200).json(user);
+  if (user) {
+    return res.status(200).json(user);
+  }
+  return res.status(400).json("No such a user!");
+});
+
+app.post("/users", async (req: Request, res: Response) => {
+  try {
+    const createdUser = await User.create({ ...req.body });
+    return res.status(200).json(createdUser);
+  } catch (e) {
+    return res.status(400);
+  }
+});
+
+app.delete("/users/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    await User.deleteOne({ _id: id });
+    res.status(200).json("User deleted!");
+  } catch (e) {
+    res.status(400).json(e.message);
+  }
+});
+
+app.put("/users/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await User.findByIdAndUpdate(id, req.body);
+    res.status(200).json("User updated!");
+  } catch (e) {
+    res.status(400).json(e.message);
+  }
 });
 
 const PORT = "4444";
