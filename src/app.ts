@@ -4,6 +4,7 @@ import * as mongoose from "mongoose";
 import { configs } from "./configs/config";
 import { User } from "./models/user.model";
 import { IUser } from "./types/user.type";
+import { UserValidator } from "./validators/user.validator";
 
 const app = express();
 
@@ -20,42 +21,71 @@ app.get(
   },
 );
 
-app.get("/users/:id", async (req: Request, res: Response) => {
-  const userId = req.params.id;
-  const user = await User.findById(userId);
-  if (user) {
-    return res.status(200).json(user);
-  }
-  return res.status(400).json("No such a user!");
-});
+app.get(
+  "/users/:id",
+  async (req: Request, res: Response): Promise<Response<IUser>> => {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
 
-app.post("/users", async (req: Request, res: Response) => {
-  try {
-    const createdUser = await User.create({ ...req.body });
-    return res.status(200).json(createdUser);
-  } catch (e) {
-    return res.status(400);
-  }
-});
+    try {
+      if (!user) {
+        throw new Error("No such a user!");
+      }
+      return res.status(200).json(user);
+    } catch (e) {
+      return res.status(400).json(e.message);
+    }
+  },
+);
 
-app.delete("/users/:id", async (req: Request, res: Response) => {
+app.post(
+  "/users",
+  async (req: Request, res: Response): Promise<Response<IUser>> => {
+    try {
+      const { value, error } = UserValidator.create.validate(req.body);
+      if (error) {
+        throw new Error(error.message);
+      }
+      const createdUser = await User.create(value);
+      return res.status(200).json(createdUser);
+    } catch (e) {
+      return res.status(400).json(e.message);
+    }
+  },
+);
+
+app.delete(
+  "/users/:id",
+  async (req: Request, res: Response): Promise<Response<string>> => {
+    const { id } = req.params;
+    try {
+      await User.deleteOne({ _id: id });
+      return res.status(200).json("User deleted!");
+    } catch (e) {
+      return res.status(400).json(e.message);
+    }
+  },
+);
+
+app.put("/users/:id", async (req, res): Promise<Response<string>> => {
   const { id } = req.params;
-  try {
-    await User.deleteOne({ _id: id });
-    res.status(200).json("User deleted!");
-  } catch (e) {
-    res.status(400).json(e.message);
-  }
-});
-
-app.put("/users/:id", async (req, res) => {
-  const { id } = req.params;
 
   try {
-    await User.findByIdAndUpdate(id, req.body);
-    res.status(200).json("User updated!");
+    const { error, value } = UserValidator.update.validate(req.body);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    const user = await User.findByIdAndUpdate(id, value, {
+      returnDocument: "after",
+    });
+
+    if (!user) {
+      throw new Error("User not found!");
+    }
+    return res.status(200).json("User updated!");
   } catch (e) {
-    res.status(400).json(e.message);
+    return res.status(400).json(e.message);
   }
 });
 
