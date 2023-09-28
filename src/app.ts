@@ -1,11 +1,10 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Response } from "express";
 import * as mongoose from "mongoose";
 
 import { configs } from "./configs/config";
 import { IUser } from "./interfaces/user.interface";
 import { User } from "./models/user.model";
 import { UserValidator } from "./validators/user.validator";
-import {ApiError} from "./errors/api.error";
 
 const app = express();
 
@@ -34,7 +33,11 @@ app.get("/users/:id", async (req, res): Promise<Response<IUser>> => {
 
 app.post("/users", async (req, res): Promise<Response<string>> => {
   try {
-    await User.create(req.body);
+    const { value, error } = UserValidator.create.validate(req.body);
+    if (error) {
+      throw new Error(error.message);
+    }
+    await User.create(value);
     return res.status(200).json("User created!");
   } catch (e) {
     return res.status(400).json(e.message);
@@ -42,8 +45,11 @@ app.post("/users", async (req, res): Promise<Response<string>> => {
 });
 
 app.delete("/users/:id", async (req, res): Promise<Response<string>> => {
-  const { id } = req.params;
   try {
+    const { id } = req.params;
+    if (!mongoose.isObjectIdOrHexString(id)) {
+      throw new Error("Not valid ID");
+    }
     const findUser = User.findById(id);
     if (!findUser) {
       throw new Error("No such a user!");
@@ -55,35 +61,29 @@ app.delete("/users/:id", async (req, res): Promise<Response<string>> => {
   }
 });
 
-app.put("/users/:id", async (req, res, next: NextFunction) => {
+app.put("/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.isObjectIdOrHexString(id)) {
-      throw new ApiError("Not valid ID", 400);
+      throw new Error("Not valid ID");
     }
     const { error, value } = UserValidator.update.validate(req.body);
     if (error) {
-      throw new ApiError(error.message, 400);
+      throw new Error(error.message);
     }
     const user = await User.findByIdAndUpdate(id, value, {
       returnDocument: "after",
     });
     if (!user) {
-      throw new ApiError("No such a user!", 400);
+      throw new Error("No such a user!");
     }
     return res.status(200).json({
       body: req.body,
       message: "User updated!",
     });
   } catch (e) {
-    next(e);
+    res.status(400).json(e.message);
   }
-});
-
-app.use((err: ApiError, req: Request, res: Response) => {
-  console.log(`Server has started on ${PORT} port!`);
-  const status = err.status || 500;
-  res.status(status).json(err.message);
 });
 
 const PORT = "4444";
