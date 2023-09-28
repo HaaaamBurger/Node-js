@@ -1,7 +1,8 @@
-import express, { Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import * as mongoose from "mongoose";
 
 import { configs } from "./configs/config";
+import { ApiError } from "./errors/api.error";
 import { IUser } from "./interfaces/user.interface";
 import { User } from "./models/user.model";
 
@@ -30,6 +31,8 @@ app.get("/users/:id", async (req, res): Promise<Response<IUser>> => {
   }
 });
 
+
+
 app.post("/users", async (req, res): Promise<Response<string>> => {
   try {
     await User.create(req.body);
@@ -53,17 +56,27 @@ app.delete("/users/:id", async (req, res): Promise<Response<string>> => {
   }
 });
 
-app.put("/users/:id", async (req, res): Promise<Response<IUser | string>> => {
+app.put("/users/:id", async (req, res, next: NextFunction) => {
   const { id } = req.params;
   try {
-    await User.findByIdAndUpdate(id, req.body);
+    const user = await User.findByIdAndUpdate(id, req.body, {
+      returnDocument: "after",
+    });
+    if (!user) {
+      throw new ApiError("No such a user!", 404);
+    }
     return res.status(200).json({
       body: req.body,
       message: "User updated!",
     });
   } catch (e) {
-    return res.status(400).json(e.message);
+    next(e);
   }
+});
+
+app.use((err: any, req: Request, res: Response) => {
+  const status = err.status || 500;
+  res.status(status).json(err.message);
 });
 
 const PORT = "4444";
