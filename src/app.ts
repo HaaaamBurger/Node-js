@@ -2,9 +2,10 @@ import express, { NextFunction, Request, Response } from "express";
 import * as mongoose from "mongoose";
 
 import { configs } from "./configs/config";
-import { ApiError } from "./errors/api.error";
 import { IUser } from "./interfaces/user.interface";
 import { User } from "./models/user.model";
+import { UserValidator } from "./validators/user.validator";
+import {ApiError} from "./errors/api.error";
 
 const app = express();
 
@@ -31,8 +32,6 @@ app.get("/users/:id", async (req, res): Promise<Response<IUser>> => {
   }
 });
 
-
-
 app.post("/users", async (req, res): Promise<Response<string>> => {
   try {
     await User.create(req.body);
@@ -57,13 +56,20 @@ app.delete("/users/:id", async (req, res): Promise<Response<string>> => {
 });
 
 app.put("/users/:id", async (req, res, next: NextFunction) => {
-  const { id } = req.params;
   try {
-    const user = await User.findByIdAndUpdate(id, req.body, {
+    const { id } = req.params;
+    if (!mongoose.isObjectIdOrHexString(id)) {
+      throw new ApiError("Not valid ID", 400);
+    }
+    const { error, value } = UserValidator.update.validate(req.body);
+    if (error) {
+      throw new ApiError(error.message, 400);
+    }
+    const user = await User.findByIdAndUpdate(id, value, {
       returnDocument: "after",
     });
     if (!user) {
-      throw new ApiError("No such a user!", 404);
+      throw new ApiError("No such a user!", 400);
     }
     return res.status(200).json({
       body: req.body,
@@ -74,7 +80,8 @@ app.put("/users/:id", async (req, res, next: NextFunction) => {
   }
 });
 
-app.use((err: any, req: Request, res: Response) => {
+app.use((err: ApiError, req: Request, res: Response) => {
+  console.log(`Server has started on ${PORT} port!`);
   const status = err.status || 500;
   res.status(status).json(err.message);
 });
