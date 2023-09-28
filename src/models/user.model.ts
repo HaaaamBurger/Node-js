@@ -1,17 +1,17 @@
 import { model, Schema } from "mongoose";
 
-import { EGenders } from "../enums/gender.enum";
+import { EGender } from "../enums/gender.enum";
 
-const userScheme = new Schema({
+const userSchema = new Schema({
   name: {
     type: String,
   },
   age: {
     type: Number,
   },
-  genders: {
+  gender: {
     type: String,
-    enum: EGenders,
+    enum: EGender,
   },
   email: {
     type: String,
@@ -21,9 +21,9 @@ const userScheme = new Schema({
     trim: true,
   },
   password: {
-    type: "String",
-    require: true,
+    type: String,
+    required: true,
   },
 });
 
-export const User = model("user", userScheme);
+export const User = model("user", userSchema);
