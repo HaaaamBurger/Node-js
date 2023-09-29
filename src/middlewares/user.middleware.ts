@@ -5,9 +5,9 @@ import { User } from "../models/user.model";
 class UserMiddleware {
   public async getByIdOrThrow(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId } = req.params;
+      const { id } = req.params;
 
-      const user = await User.findById(userId);
+      const user = await User.findById(id);
       console.log(user);
       if (!user) {
         throw new Error("No such a user!(mw)");

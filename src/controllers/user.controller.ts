@@ -13,7 +13,6 @@ class UserController {
   public async getById(req: Request, res: Response): Promise<Response<IUser>> {
     try {
       const user = res.locals;
-      console.log(user);
       return res.status(200).json(user);
     } catch (e) {
       return res.status(400).json(e.message);
