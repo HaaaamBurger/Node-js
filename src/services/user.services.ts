@@ -1,18 +1,12 @@
+import mongoose from "mongoose";
+
 import { IUser } from "../interfaces/user.interface";
 import { User } from "../models/user.model";
 import { UserValidator } from "../validators/user.validator";
-import mongoose from "mongoose";
 
 class UserServices {
   public async getUsers(): Promise<IUser[]> {
     return await User.find();
-  }
-  public async getUser(id: string) {
-    const user = await User.findById(id);
-    if (!user) {
-      throw new Error("No such a user!");
-    }
-    return user;
   }
   public async postUser(user: IUser): Promise<void> {
     const { value, error } = UserValidator.create.validate(user);
