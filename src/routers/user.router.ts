@@ -8,10 +8,10 @@ router.get("/", userController.getAll);
 
 router.get("/:id", userController.getById);
 
-router.post("/users", userController.post);
+router.post("/", userController.post);
 
-router.delete("/users/:id", userController.deleteById);
+router.delete("/:id", userController.deleteById);
 
-router.put("/users/:id", userController.put);
+router.put("/:id", userController.put);
 
 export const userRouter = router;
