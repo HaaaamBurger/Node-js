@@ -1,51 +1,41 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
-import { IUser } from "../interfaces/user.interface";
-import { userServices } from "../services/user.services";
+import { userRepository } from "../respositories/user.repository";
 
 class UserController {
-  public async getAll(req: Request, res: Response): Promise<Response<IUser[]>> {
-    const users = await userServices.getUsers();
-    return res.status(200).json({
-      data: users,
-    });
-  }
-  public async getById(req: Request, res: Response): Promise<Response<IUser>> {
-    try {
-      const user = res.locals;
-      return res.status(200).json(user);
-    } catch (e) {
-      return res.status(400).json(e.message);
-    }
-  }
-  public async post(req: Request, res: Response): Promise<Response<string>> {
-    try {
-      await userServices.postUser(req.body);
-      return res.status(200).json("User created!");
-    } catch (e) {
-      return res.status(400).json(e.message);
-    }
-  }
-  public async deleteById(
+  public async getAll(
     req: Request,
     res: Response,
-  ): Promise<Response<string>> {
+    next: NextFunction,
+  ): Promise<void> {
     try {
-      await userServices.deleteById(req.params.id);
-      return res.status(200).json("User deleted!");
+      const users = await userRepository.getAll();
+      res.status(200).json(users);
     } catch (e) {
-      return res.status(400).json(e.message);
+      next(e);
     }
   }
-  public async put(req: Request, res: Response) {
+  public async getById(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
-      await userServices.updateUser(req.params.id, req.body);
-      return res.status(200).json({
+      const user = res.locals;
+      res.status(200).json(user);
+    } catch (e) {
+      next(e);
+    }
+  }
+  public async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      await userRepository.create(req.body);
+      res.status(200).json({
         body: req.body,
-        message: "User updated!",
+        message: "User created!",
       });
     } catch (e) {
-      res.status(400).json(e.message);
+      next(e);
     }
   }
 }
