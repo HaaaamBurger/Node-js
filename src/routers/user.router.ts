@@ -21,8 +21,18 @@ router.post(
   userController.create,
 );
 
-// router.delete("/:id");
-//
-// router.put("/:id");
+router.delete(
+  "/:id",
+  usersMiddleware.isUser,
+  usersMiddleware.isIdValid,
+  userController.delete,
+);
+
+router.put(
+  "/:id",
+  usersMiddleware.isIdValid,
+  usersMiddleware.isValidBody(UserValidator.update),
+  userController.update,
+);
 
 export const userRouter = router;

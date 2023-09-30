@@ -11,5 +11,11 @@ class UserRepository {
   public async create(user: IUser): Promise<void> {
     await User.create(user);
   }
+  public async delete(id: string): Promise<void> {
+    await User.deleteOne({ _id: id });
+  }
+  public async update(id: string, user: IUser): Promise<void> {
+    await User.findByIdAndUpdate(id, user);
+  }
 }
 export const userRepository = new UserRepository();
