@@ -14,6 +14,9 @@ class CarService {
   public async deleteCar(id: string) {
     await Car.deleteOne({ _id: id });
   }
+  public async putCar(id: string, car: Partial<ICar>) {
+    await Car.findByIdAndUpdate(id, car);
+  }
 }
 
 export const carService = new CarService();

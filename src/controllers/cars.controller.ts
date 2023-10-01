@@ -16,9 +16,8 @@ class CarsController {
     }
   }
   public async getById(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
     try {
-      const car = carService.getById(id);
+      const car = res.locals;
       res.status(200).json(car);
     } catch (e) {
       next(e);
@@ -35,6 +34,23 @@ class CarsController {
         body: req.body,
         message: "Car created!",
       });
+    } catch (e) {
+      next(e);
+    }
+  }
+  public async delete(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      await carService.deleteCar(id);
+      res.status(200).json("Car deleted!");
+    } catch (e) {
+      next(e);
+    }
+  }
+  public async put(req: Request, res: Response, next: NextFunction) {
+    try {
+      await carService.putCar(req.params.id, req.body);
+      res.status(200).json("Car updated!");
     } catch (e) {
       next(e);
     }

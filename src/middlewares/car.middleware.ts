@@ -3,7 +3,7 @@ import { ObjectSchema } from "joi";
 import * as mongoose from "mongoose";
 
 import { ApiError } from "../errors/api.error";
-import {carService} from "../services/car.service";
+import { carService } from "../services/car.service";
 
 class CarMiddleware {
   public isIdValid(req: Request, res: Response, next: NextFunction) {
@@ -34,7 +34,12 @@ class CarMiddleware {
   public async isCar(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      await carService.deleteCar(id);
+      const car = await carService.getById(id);
+      if (!car) {
+        throw new ApiError("No such a car!", 400);
+      }
+      res.locals = car;
+      next();
     } catch (e) {
       next(e);
     }
