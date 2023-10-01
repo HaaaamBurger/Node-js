@@ -3,18 +3,17 @@ import * as mongoose from "mongoose";
 
 import { configs } from "./configs/config";
 import { ApiError } from "./errors/api.error";
-import { userRouter } from "./routers/user.router";
+import { carRouter } from "./routers/car.router";
 
 const app = express();
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/users", userRouter);
+app.use("/cars", carRouter);
 
-app.use((error: ApiError, req: Request, res: Response, next: NextFunction) => {
-  const status = error.status || 500;
-  res.status(status).json(error.message);
+app.use((err: ApiError, req: Request, res: Response, next: NextFunction) => {
+  const status = err.status || 500;
+  res.status(status).json(err.message);
 });
 
 const PORT = "4444";
