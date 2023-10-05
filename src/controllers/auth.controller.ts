@@ -3,18 +3,18 @@ import { NextFunction, Request, Response } from "express";
 import { authService } from "../services/auth.service";
 
 class AuthController {
-  public async login(req: Request, res: Response, next: NextFunction) {
+  public async loginUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const tokensPair = await authService.loginUser(req.body);
+      const tokensPair = await authService.login(req.body);
       res.json(tokensPair);
     } catch (e) {
       next(e);
     }
   }
-  public async register(req: Request, res: Response, next: NextFunction) {
+  public async registerUser(req: Request, res: Response, next: NextFunction) {
     try {
-      await authService.registerUser(req.body);
-      return res.sendStatus(201);
+      await authService.register(req.body);
+      res.status(200).json("User registered!");
     } catch (e) {
       next(e);
     }

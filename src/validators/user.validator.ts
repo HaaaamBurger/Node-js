@@ -1,5 +1,4 @@
 import joi from "joi";
-
 export class UserValidator {
   static email = joi
     .string()

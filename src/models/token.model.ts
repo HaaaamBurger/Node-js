@@ -1,21 +1,27 @@
-import { model, Schema, Types} from "mongoose";
+import { model, Schema, Types } from "mongoose";
 
 import { User } from "./user.model";
 
-const tokensSchema = new Schema({
-  accessToken: {
-    type: String,
-    required: true,
+const tokenSchema = new Schema(
+  {
+    accessToken: {
+      type: String,
+      required: true,
+    },
+    refreshToken: {
+      type: String,
+      required: true,
+    },
+    _userId: {
+      type: Types.ObjectId,
+      required: true,
+      ref: User,
+    },
   },
-  refreshToken: {
-    type: String,
-    required: true,
+  {
+    timestamps: true,
+    versionKey: false,
   },
-  _userId: {
-    type: Types.ObjectId,
-    required: true,
-    ref: User,
-  },
-});
+);
 
-export const Token = model("token", tokensSchema);
+export const Token = model("token", tokenSchema);
