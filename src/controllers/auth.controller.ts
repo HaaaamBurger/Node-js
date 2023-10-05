@@ -19,6 +19,15 @@ class AuthController {
       next(e);
     }
   }
+  public async refresh(req: Request, res: Response, next: NextFunction) {
+    try {
+      // const tokensPair = await authService.refresh();
+      // res.status(201).json(tokensPair);
+      console.log("Refresh Token!");
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export const authController = new AuthController();
