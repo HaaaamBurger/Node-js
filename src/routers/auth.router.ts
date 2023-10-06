@@ -16,8 +16,7 @@ router.post(
 );
 router.post(
   "/refresh",
-  authMiddleware.checkForRefreshToken,
-  userMiddleware.isBodyValid,
+  authMiddleware.checkRefreshToken,
   authController.refresh,
 );
 export const authRouter = router;

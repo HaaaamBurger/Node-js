@@ -11,6 +11,15 @@ class UserController {
       next(e);
     }
   }
+  public async getById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const user = await userService.userById(id);
+      res.status(201).json(user);
+    } catch (e) {
+      next(e);
+    }
+  }
   public async deleteById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;

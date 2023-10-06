@@ -10,7 +10,7 @@ class TokenRepository {
   public async deleteOne(params: FilterQuery<ITokenDB>): Promise<void> {
     await Token.deleteOne(params);
   }
-  public async findOne(params) {
+  public async findOne(params: FilterQuery<ITokenDB>) {
     return await Token.findOne(params);
   }
 }
